@@ -13,14 +13,14 @@ nconf.argv().env().file({ file: './config.json' })
 let actualInstance
 
 async function run () {
-  let token = nconf.get('simpleFIN:token')
-  let accessKey = nconf.get('simpleFIN:accessKey')
-  let budgetId = nconf.get('actual:budgetId')
-  let budgetEncryption = nconf.get('actual:budgetEncryption') || ''
-  let serverUrl = nconf.get('actual:serverUrl') || ''
-  let serverPassword = nconf.get('actual:serverPassword') || ''
-  let sendNotes = nconf.get('actual:sendNotes') || ''
-  let serverValidated = nconf.get('actual:serverValidated') || ''
+  let token = nconf.get('simpleFIN-token')
+  let accessKey = nconf.get('simpleFIN-accessKey')
+  let budgetId = nconf.get('actual-budgetId')
+  let budgetEncryption = nconf.get('actual-budgetEncryption') || ''
+  let serverUrl = nconf.get('actual-serverUrl') || ''
+  let serverPassword = nconf.get('actual-serverPassword') || ''
+  let sendNotes = nconf.get('actual-sendNotes') || ''
+  let serverValidated = nconf.get('actual-serverValidated') || ''
   let linkedAccounts = nconf.get('linkedAccounts') || []
 
   const setupRequired = !!nconf.get('setup') || !accessKey || !budgetId || !serverUrl || !serverPassword || !serverValidated
@@ -37,13 +37,13 @@ async function run () {
     serverPassword = initialSetup.serverPassword
     sendNotes = initialSetup.sendNotes
 
-    nconf.set('simpleFIN:token', token)
-    nconf.set('simpleFIN:accessKey', accessKey)
-    nconf.set('actual:budgetId', budgetId)
-    nconf.set('actual:budgetEncryption', budgetEncryption)
-    nconf.set('actual:serverUrl', serverUrl)
-    nconf.set('actual:serverPassword', serverPassword)
-    nconf.set('actual:sendNotes', sendNotes)
+    nconf.set('simpleFIN-token', token)
+    nconf.set('simpleFIN-accessKey', accessKey)
+    nconf.set('actual-budgetId', budgetId)
+    nconf.set('actual-budgetEncryption', budgetEncryption)
+    nconf.set('actual-serverUrl', serverUrl)
+    nconf.set('actual-serverPassword', serverPassword)
+    nconf.set('actual-sendNotes', sendNotes)
 
     await nconf.save()
 
@@ -71,7 +71,7 @@ async function run () {
 
     }
 
-    nconf.set('actual:serverValidated', 'yes')
+    nconf.set('actual-serverValidated', 'yes')
 
     await nconf.save()
    
