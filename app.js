@@ -23,6 +23,13 @@ async function run () {
   let serverValidated = nconf.get('actual-serverValidated') || ''
   let linkedAccounts = nconf.get('linkedAccounts') || []
 
+  try{
+    linkedAccounts = JSON.parse(linkedAccounts)
+  } catch (error) {
+    console.log("Could not parse the linkedAccounts. Please make sure it is a correctly formatted JSON object. Setting to []")
+    linkedAccounts = []
+  }
+
   const setupRequired = !!nconf.get('setup') || !accessKey || !budgetId || !serverUrl || !serverPassword || !serverValidated
   const linkRequired = setupRequired || !!nconf.get('link') || !linkedAccounts
 
@@ -108,6 +115,7 @@ async function run () {
 
   budgetspath = __dirname+'/budgets'
   fsExtra.emptyDirSync(budgetspath);
+
 
   await sync.run(accessKey, budgetId, budgetEncryption, linkedAccounts, startDate, serverUrl, serverPassword, sendNotes)
   nconf.set('lastSync', new Date().toDateString())
