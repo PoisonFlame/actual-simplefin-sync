@@ -1,6 +1,7 @@
 const simpleFIN = require('./simpleFIN')
 const api = require('@actual-app/api');
 const actualInjected = require('@actual-app/api/dist/injected');
+const https = require('https')
 
 let _accessKey
 let _linkedAccounts
@@ -10,9 +11,14 @@ let _serverPassword
 let _budgetId
 let _budgetEncryption
 let _sendNotes
+let _discordWebhookUrl
+let _discordWebhookEnabled
 
 async function sync () {
 
+  let combinedMsg = '';
+  let errors = '';
+  
   const { mkdir } = require('fs').promises;
 
   budgetspath = __dirname+'/budgets'
@@ -42,9 +48,13 @@ async function sync () {
   console.log('Getting all transactions from SimpleFIN')
   const allTrans = await simpleFIN.getTransactions(_accessKey, _startDate)
 
-  console.log('_____________________________________________________')
-  console.log('|          Account          |   Added   |  Updated  |')
-  console.log('+---------------------------+-----------+-----------+')
+  let header1 = '_____________________________________________________'
+  let header2 = '|          Account          |   Added   |  Updated  |'
+  let header3 = '+---------------------------+-----------+-----------+'
+  console.log(header1)
+  console.log(header2)
+  console.log(header3)
+  combinedMsg += `${header1}\n${header2}\n${header3}\n`
   for (const simpleFINAccountId in _linkedAccounts) {
     const accountId = _linkedAccounts[simpleFINAccountId]
     const transactions = allTrans.accounts.find(f => f.id === simpleFINAccountId).transactions
@@ -63,7 +73,9 @@ async function sync () {
 
       const importedTransactions = await api.importTransactions(accountId, transactions)
       const accountName = allAccounts.find(f => f.id === accountId).name
-      console.log(`| ${accountName.padEnd(25, ' ')} | ${importedTransactions.added.length.toString().padStart(9, ' ')} | ${importedTransactions.updated.length.toString().padStart(9, ' ')} |`)
+      const accountStatus = `| ${accountName.padEnd(25, ' ')} | ${importedTransactions.added.length.toString().padStart(9, ' ')} | ${importedTransactions.updated.length.toString().padStart(9, ' ')} |`)
+      console.log(accountStatus)
+      combinedMsg += `${accountStatus}\n`
       
       if( _sendNotes == 'yes' ) {
       
@@ -80,22 +92,29 @@ async function sync () {
       }
     } catch (ex) {
       console.log(ex)
+      error = ex.message
+      return [combinedMsg, error]
       throw ex
     }
   }
-  console.log('¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯')
+  const footer = '¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯¯'
+  console.log(footer)
+  combinedMsg += `${footer}\n`
   console.log('Re-downloading budget to force sync.')
   try {
     await api.downloadBudget(_budgetId,  {password:_budgetEncryption});
   } catch (e) {
     console.log(e.message)
+    error = e.message
+    return [combinedMsg, error]
     throw e
   }
   await api.shutdown()
+  return [combinedMsg, error]
   
 }
 
-async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, startDate, serverUrl, serverPassword, sendNotes) {
+async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, startDate, serverUrl, serverPassword, sendNotes, discordWebhookEnabled, discordWebhookUrl) {
   _accessKey = accessKey
   _linkedAccounts = linkedAccounts
   _startDate = startDate
@@ -104,6 +123,8 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
   _budgetId = budgetId
   _budgetEncryption = budgetEncryption
   _sendNotes = sendNotes
+  _discordWebhookUrl = discordWebhookUrl
+  _discordWebhookEnabled = discordWebhookEnabled
 
   if(!_serverUrl || !_serverPassword) {
     throw new Error('Server URL or password not set')
@@ -112,8 +133,40 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
   }
   console.log(`Budget ID: ${budgetId}`)
 
-  await sync()
-  
+  const [syncMessage,syncErr] = await sync()
+
+  if(discordWebhookEnabled === "yes"){
+ 
+    let dataToSend = {
+      "embeds": [
+        {
+          "title": `Sync Status for ${new Date(new Date().toLocaleString('en', {timeZone: 'America/Toronto'})).toJSON().slice(0, 10).toString()}: %1`,
+          "embed" : "```" + syncMessage + "```",
+          "color": 5814783
+        }
+      ]
+    }
+
+    const reqOptions = {
+      method: 'POST', // You can change this to 'GET', 'PUT', 'DELETE', etc. based on your API requirements
+      headers: {
+        'Content-Type': 'application/json',
+      }
+    };
+
+    const req = https.request(discordWebhookUrl, options);
+
+     if(syncErr) {
+      // Return error to discord hook
+      dataToSend = dataToSend.replace("%1", "Error")
+      dataToSend.embeds.embed = ""
+    }else{
+      // Return status ok to discord webhook
+      dataToSend = dataToSend.replace("%1", "OK")
+    }
+    req.write(JSON.stringify(dataToSend))
+    req.end()
+  }
 }
 
 module.exports = { run }
