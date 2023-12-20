@@ -73,7 +73,7 @@ async function sync () {
 
       const importedTransactions = await api.importTransactions(accountId, transactions)
       const accountName = allAccounts.find(f => f.id === accountId).name
-      const accountStatus = `| ${accountName.padEnd(25, ' ')} | ${importedTransactions.added.length.toString().padStart(9, ' ')} | ${importedTransactions.updated.length.toString().padStart(9, ' ')} |`)
+      const accountStatus = `| ${accountName.padEnd(25, ' ')} | ${importedTransactions.added.length.toString().padStart(9, ' ')} | ${importedTransactions.updated.length.toString().padStart(9, ' ')} |`
       console.log(accountStatus)
       combinedMsg += `${accountStatus}\n`
       
@@ -93,7 +93,7 @@ async function sync () {
     } catch (ex) {
       console.log(ex)
       error = ex.message
-      return [combinedMsg, error]
+      return [combinedMsg, errors]
       throw ex
     }
   }
@@ -106,11 +106,11 @@ async function sync () {
   } catch (e) {
     console.log(e.message)
     error = e.message
-    return [combinedMsg, error]
+    return [combinedMsg, errors]
     throw e
   }
   await api.shutdown()
-  return [combinedMsg, error]
+  return [combinedMsg, errors]
   
 }
 
@@ -158,11 +158,11 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
 
      if(syncErr) {
       // Return error to discord hook
-      dataToSend = dataToSend.replace("%1", "Error")
+      dataToSend = dataToSend.embeds[0].title.replace("%1", "Error")
       dataToSend.embeds.embed = ""
     }else{
       // Return status ok to discord webhook
-      dataToSend = dataToSend.replace("%1", "OK")
+      dataToSend = dataToSend.embeds[0].title.replace("%1", "OK")
     }
     req.write(JSON.stringify(dataToSend))
     req.end()
