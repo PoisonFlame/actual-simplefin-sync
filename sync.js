@@ -141,31 +141,39 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
       "embeds": [
         {
           "title": `Sync Status for ${new Date(new Date().toLocaleString('en', {timeZone: 'America/Toronto'})).toJSON().slice(0, 10).toString()}: %1`,
-          "embed" : "```" + syncMessage + "```",
-          "color": 5814783
+          "color": 5814783,
+          "fields" : [
+            {
+              name: "",
+              value: "```" + syncMessage + "```"
+            }
+          ]
         }
       ]
     }
 
-    const reqOptions = {
-      method: 'POST', // You can change this to 'GET', 'PUT', 'DELETE', etc. based on your API requirements
-      headers: {
-        'Content-Type': 'application/json',
-      }
-    };
-
-    const req = https.request(discordWebhookUrl, options);
-
      if(syncErr) {
       // Return error to discord hook
       dataToSend = dataToSend.embeds[0].title.replace("%1", "Error")
-      dataToSend.embeds.embed = ""
+      dataToSend.embeds.fields.value = ""
     }else{
       // Return status ok to discord webhook
       dataToSend = dataToSend.embeds[0].title.replace("%1", "OK")
     }
-    req.write(JSON.stringify(dataToSend))
-    req.end()
+
+    await fetch(discordWebhookUrl, {                             
+        method: 'POST',                                          
+        body: JSON.stringify(dataToSend),                        
+        headers: {                                               
+            'Content-type': 'application/json; charset=UTF-8',   
+        },                                                       
+    })                                                           
+        .then((response) => response.json())                     
+        .then((json) => console.log(json))                       
+        .catch(error => {                                        
+            console.log(error)                                   
+        })          
+    
   }
 }
 
