@@ -22,6 +22,8 @@ async function run () {
   let sendNotes = nconf.get('actual-sendNotes') || ''
   let serverValidated = nconf.get('actual-serverValidated') || ''
   let linkedAccounts = nconf.get('linkedAccounts') || []
+  let discordWebhookEnabled = nconf.get('discordWebhookEnabled') || ''
+  let discordWebhookUrl = nconf.get('discordWebhookUrl') || ''
 
   try{
     linkedAccounts = JSON.parse(linkedAccounts)
@@ -117,7 +119,7 @@ async function run () {
   fsExtra.emptyDirSync(budgetspath);
 
 
-  await sync.run(accessKey, budgetId, budgetEncryption, linkedAccounts, startDate, serverUrl, serverPassword, sendNotes)
+  await sync.run(accessKey, budgetId, budgetEncryption, linkedAccounts, startDate, serverUrl, serverPassword, sendNotes, discordWebhookEnabled, discordWebhookUrl)
   nconf.set('lastSync', new Date().toDateString())
   nconf.save()
 
