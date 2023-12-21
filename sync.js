@@ -1,7 +1,6 @@
 const simpleFIN = require('./simpleFIN')
 const api = require('@actual-app/api');
 const actualInjected = require('@actual-app/api/dist/injected');
-const https = require('https')
 
 let _accessKey
 let _linkedAccounts
@@ -157,7 +156,7 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
      if(syncErr) {
       // Return error to discord hook
       dataToSend = dataToSend.embeds[0].title.replace("%1", "Error")
-      dataToSend.embeds.fields.value = ""
+      dataToSend.embeds.fields.value = "```" + errors + "```"
     }else{
       // Return status ok to discord webhook
       dataToSend = dataToSend.embeds[0].title.replace("%1", "OK")
@@ -174,8 +173,7 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
         .then((json) => console.log(json))                       
         .catch(error => {                                        
             console.log(error)                                   
-        })          
-    
+        })
   }
 }
 
