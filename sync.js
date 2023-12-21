@@ -145,8 +145,8 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
           "color": 5814783,
           "fields" : [
             {
-              name: "",
-              value: "```" + syncMessage + "```"
+              "name": "",
+              "value": "```" + syncMessage + "```"
             }
           ]
         }
