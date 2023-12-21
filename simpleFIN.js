@@ -75,6 +75,7 @@ async function getAccounts (accessKey, startDate, endDate) {
         data += d
       })
       res.on('end', () => {
+        console.log("XXX", data)
         resolve(JSON.parse(data))
       })
     })
