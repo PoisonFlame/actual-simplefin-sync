@@ -155,11 +155,11 @@ async function run (accessKey, budgetId, budgetEncryption, linkedAccounts, start
 
      if(syncErr) {
       // Return error to discord hook
-      dataToSend = dataToSend.embeds[0].title.replace("%1", "Error")
+      dataToSend.embeds[0].title = dataToSend.embeds[0].title.replace("%1", "Error")
       dataToSend.embeds[0].fields[0].value = "```" + errors + "```"
     }else{
       // Return status ok to discord webhook
-      dataToSend = dataToSend.embeds[0].title.replace("%1", "OK")
+      dataToSend.embeds[0].title = dataToSend.embeds[0].title.replace("%1", "OK")
     }
 
     await fetch(discordWebhookUrl, {                             
