@@ -47,6 +47,8 @@ async function sync () {
   const allAccounts = await api.getAccounts()
   console.log('Getting all transactions from SimpleFIN')
   const allTrans = await simpleFIN.getTransactions(_accessKey, _startDate)
+  const accountErrors = allTrans.errors
+  errors += `${accountErrors}\n`
 
   let header1 = '_____________________________________________________'
   let header2 = '|          Account          |   Added   |  Updated  |'
@@ -92,7 +94,7 @@ async function sync () {
       }
     } catch (ex) {
       console.log(ex)
-      error = ex.message
+      errors += `${ex.message}\n`
       return [combinedMsg, errors]
       throw ex
     }
@@ -105,7 +107,7 @@ async function sync () {
     await api.downloadBudget(_budgetId,  {password:_budgetEncryption});
   } catch (e) {
     console.log(e.message)
-    error = e.message
+    errors += `${e.message}\n`
     return [combinedMsg, errors]
     throw e
   }
